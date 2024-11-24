@@ -1,0 +1,15 @@
+# Ignore virtual environments
+venv/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore credentials (local development only)
+config/credentials/
+config/client.properties
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+.env
