@@ -30,6 +30,11 @@ def read_config(file_path="config/client.properties"):
                     continue
                 parameter, value = line.split('=', 1)
                 config[parameter.strip()] = value.strip()
+
+        # Remove invalid or unused properties for Producer
+        if 'schema.registry.url' in config:
+            del config['schema.registry.url']
+
     except FileNotFoundError:
         logging.error(f"Configuration file not found at {file_path}.")
     return config

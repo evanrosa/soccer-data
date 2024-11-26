@@ -1,0 +1,43 @@
+FROM openjdk:11-jdk-slim
+
+# Install Python and other dependencies
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    wget \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Set JAVA_HOME environment variable
+ENV JAVA_HOME /usr/local/openjdk-11
+ENV PATH $JAVA_HOME/bin:$PATH
+
+# Set Python as default
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
+# Create the flink user and set permissions
+RUN useradd -ms /bin/bash flink
+
+# Set working directory
+WORKDIR /opt/flink
+
+# Download and install Flink
+RUN wget https://archive.apache.org/dist/flink/flink-1.20.0/flink-1.20.0-bin-scala_2.12.tgz && \
+    tar -xzf flink-1.20.0-bin-scala_2.12.tgz && \
+    mv flink-1.20.0/* . && \
+    rm -rf flink-1.20.0 flink-1.20.0-bin-scala_2.12.tgz
+
+# Add Flink binaries to PATH
+ENV PATH /opt/flink/bin:$PATH
+
+# Ensure flink user has permissions to write to the log directory
+RUN mkdir -p /opt/flink/log && chown -R flink:flink /opt/flink/log
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Switch to flink user
+USER flink
+
+# Set the entrypoint to Flink's jobmanager
+ENTRYPOINT ["bin/jobmanager.sh", "start-foreground"]

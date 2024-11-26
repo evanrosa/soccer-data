@@ -62,19 +62,20 @@ def read_config(file_path="config/client.properties"):
         with open(file_path) as fh:
             for line in fh:
                 line = line.strip()
-                # Skip empty lines and comments
                 if not line or line.startswith("#"):
                     continue
-                # Ensure the line contains '='
                 if '=' not in line:
                     logging.warning(f"Skipping invalid config line: {line}")
                     continue
                 parameter, value = line.split('=', 1)
                 config[parameter.strip()] = value.strip()
+
+        # Remove invalid or unused properties for Producer
+        if 'schema.registry.url' in config:
+            del config['schema.registry.url']
+
     except FileNotFoundError:
         logging.error(f"Configuration file not found at {file_path}.")
-    except Exception as e:
-        logging.error(f"Error reading configuration file: {e}")
     return config
 
 def produce_message(topic, config, key, value):
